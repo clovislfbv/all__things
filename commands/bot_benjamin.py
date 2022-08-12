@@ -16,7 +16,7 @@ import pytz
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
-import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou
+import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou, clear, togglebotchannel
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -833,14 +833,6 @@ async def lettre_random(ctx):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def togglebotchannel(ctx):
-    global allowed_channels
-    current_channel = ctx.message.channel.id
-    allowed_channels.append(current_channel)
-    await ctx.send("Cette channel est désormais un bot channel.")
-
 def mutagen_length(path):
     try:
         audio = MP3(path)
@@ -952,13 +944,6 @@ async def aide(ctx):
                 await ctx.send(list_commands)
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def clear(ctx, nombre : int):
-    messages = await ctx.channel.history(limit = nombre + 1).flatten()
-    for message in messages:
-        await(message.delete())
 
 fin = 1
 @bot.command()
@@ -1172,6 +1157,8 @@ bot.add_cog(say.CogOwner(bot))
 bot.add_cog(hug.CogOwner(bot))
 bot.add_cog(kiss.CogOwner(bot))
 bot.add_cog(coucou.CogOwner(bot))
+bot.add_cog(togglebotchannel.CogOwner(bot))
+bot.add_cog(clear.CogOwner(bot))
 
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())

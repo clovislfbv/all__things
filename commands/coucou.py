@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from random import randint
 
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
@@ -26,10 +27,10 @@ class CogOwner(commands.Cog):
             else:
                 if member == "@everyone":
                     member = "tout le monde"
-                coucous = ["https://i.gifer.com/6ZFR.gif", "https://i.gifer.com/1UEW.gif", "https://i.gifer.com/UUP.gif", "https://i.gifer.com/Wx6B.gif", "https://i.gifer.com/WShb.gif", "https://i.gifer.com/1rO6.gif", "https://i.gifer.com/5Tz.gif", "https://i.gifer.com/CMSH.gif"]
-                coocky = coucous[randint(0,len(coucous)-1)]
+                coucous = ["6ZFR", "1UEW", "UUP", "Wx6B", "WShb", "1rO6", "5Tz", "CMSH"]
+                coocky = "https://i.gifer.com/" + coucous[randint(0,len(coucous)-1)] + ".gif"
                 emb = discord.Embed(title=None, description = f"{ctx.author.mention} fait un coucou à {member}", color=0x3498db)
                 emb.set_image(url=f"{coocky}")
                 await ctx.send( embed = emb)
         else:
-            await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur)
+            await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur")

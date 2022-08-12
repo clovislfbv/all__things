@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from random import randint
 
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 

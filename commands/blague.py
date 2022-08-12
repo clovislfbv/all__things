@@ -14,6 +14,9 @@ def checks_in_bot_channel(channels, channel):
             return True
     return False
 
+async def show(blagues):
+    return await blagues.random()
+
 class CogOwner(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -24,11 +27,10 @@ class CogOwner(commands.Cog):
         channels = ctx.guild.channels
         if checks_in_bot_channel(channels, current_channel):
             with open('token_blague.txt', 'r') as token_blague:
-                blagues = BlaguesAPI(str(token_blague))
-            
-            async def show():
-                return await blagues.random()
+                blagues = BlaguesAPI(token_blague.read())
 
-            await show()
+            result = await asyncio.gather(show(blagues))
+            await ctx.send(result[0].joke)
+            await ctx.send(result[0].answer)
         else:
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
