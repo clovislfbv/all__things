@@ -12,7 +12,7 @@ def checks_in_bot_channel(channels, channel):
             return True
     return False
 
-class CogOwner(commands.Cog):
+class AdminCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

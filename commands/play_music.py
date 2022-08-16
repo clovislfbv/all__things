@@ -88,7 +88,7 @@ def checks_in_bot_channel(channels, channel):
             return True
     return False
 
-class CogOwner(commands.Cog):
+class AudioCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

@@ -17,7 +17,7 @@ def checks_in_bot_channel(channels, channel):
 async def show(blagues):
     return await blagues.random()
 
-class CogOwner(commands.Cog):
+class OtherCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
