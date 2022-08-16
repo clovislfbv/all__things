@@ -17,13 +17,18 @@ class CogOwner(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(pass_context=True, aliases=['s'])
-    async def skip(self, ctx):
-        global url_queue
+    @commands.command()
+    async def slap(ctx, member):
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
         if checks_in_bot_channel(channels, current_channel) == True:
-            client = ctx.guild.voice_client
-            client.stop()
+            if ctx.author.mention == member:
+                ctx.send("T'es teubé ou quoi ? Tu peux pas te donner de claques à toi-même ?! Y a que toi pour être si teubé que ça !!")
+            else:
+                slaps = ["https://i.gifer.com/XaaW.gif", "https://i.gifer.com/2eNz.gif", "https://i.gifer.com/2Dji.gif", "https://i.gifer.com/1Vbb.gif", "https://i.gifer.com/K03.gif", "https://i.gifer.com/DjuN.gif", "https://i.gifer.com/Djw.gif", "https://i.gifer.com/4kpG.gif", "https://i.gifer.com/K02.gif"]
+                slappy = slaps[randint(0, len(slaps)-1)]
+                emb = discord.Embed(title=None, description = f"{ctx.author.mention} met une claque à {member}", color=0x3498db)
+                emb.set_image(url=f"{slappy}")
+                await ctx.send( embed = emb)
         else:
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")

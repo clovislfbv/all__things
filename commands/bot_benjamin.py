@@ -13,6 +13,7 @@ from gtts import gTTS
 from time import sleep
 from datetime import datetime
 import pytz
+from mutagen.mp3 import MP3
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
@@ -444,16 +445,14 @@ async def current_time(ctx, contitry):
         secondes = int(secondes)
 
         tts = gTTS(f"Il est actuellement {hours} heures, {minutes} minutes et {secondes} secondes à {contitry}", lang="fr")
-        tts.save('Desktop/bot_discord/heure/heure.mp3')
+        tts.save('/home/pi/Documents/bot_discord_benjamin/all_things-my-Discord-bot/audio/heure.mp3')
         user = ctx.message.author
         if user.voice is not None:
             channel = ctx.author.voice.channel
             client = await channel.connect()
-            client.play(discord.FFmpegPCMAudio('Desktop/bot_discord/heure/heure.mp3'))
+            client.play(discord.FFmpegPCMAudio('/home/pi/Documents/bot_discord_benjamin/all_things-my-Discord-bot/audio/heure.mp3'))
             ctx.voice_client.source.volume = 1000 / 100
-            length = mutagen_length("C:/Users/gamin/Desktop/bot_discord/heure/heure.mp3")
-            print("duration sec: " + str(length))
-            print("duration min: " + str(int(length/60)) + ':' + str(int(length%60)))
+            length = mutagen_length("/home/pi/Documents/bot_discord_benjamin/all_things-my-Discord-bot/audio/heure.mp3")
             sleep(length)
             client = ctx.guild.voice_client
             await client.disconnect()
