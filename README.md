@@ -1,4 +1,4 @@
-# all_things-my-Discord-bot
+# all_things-my-Discord-bot (currently reorganising the bot's commands in several files)
 
 all_things is a discord bot coded entirely in Python
 
