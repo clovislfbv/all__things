@@ -1,4 +1,5 @@
-
+.pycache
+__pycache__
 token_blague.txt
 email.txt
 mdp epi.txt

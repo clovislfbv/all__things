@@ -17,7 +17,7 @@ from mutagen.mp3 import MP3
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
-import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou, clear, togglebotchannel
+import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -221,191 +221,6 @@ async def queue(ctx):
                 await ctx.send(embed = emb)
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
-
-@bot.command()
-async def our_diary(ctx):
-    await ctx.send("Veuillez patientez quelques instants je suis en train de recueillir tout les informations par rapport à votre emploi du temps de cette semaine.")
-    today = date.today()
-
-    d1 = today.strftime("%d-%m-%Y")
-
-
-    CHROME_PATH = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-    WINDOW_SIZE = "1920,1080"
-
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
-    chrome_options.binary_location = CHROME_PATH
-
-    driver = webdriver.Chrome(executable_path = "Desktop/chromedriver.exe", chrome_options=chrome_options)
-    driver.get(f"https://zeus.3ie.fr/home")
-
-    boutton = driver.find_element_by_tag_name("button")
-    boutton.click()
-
-    sleep(1)
-
-    email_bar = driver.find_element_by_name("loginfmt")
-    with open('email.txt', 'r') as email:
-        email_bar.send_keys(email)
-
-    search_btn = driver.find_element_by_id("idSIButton9")
-    search_btn.click()
-
-    sleep(10)
-
-    pass_bar = driver.find_element_by_name('Password')
-    with open('mdp_epi.txt', 'r') as mdp_epi:
-        pass_bar.send_keys("mdp_epi")
-
-    search_btn = driver.find_element_by_id("submitButton")
-    search_btn.click()
-
-    sleep(0.5)
-
-    await ctx.send("Connexion au site de zeus réussi. Veuillez attendre attendre quelques instants lors du chargements des données. Cela ne devrait prendre qu'une à 3 minutes de temps.")
-
-
-    yes_btn = driver.find_element_by_id("idSIButton9")
-    yes_btn.click()
-
-    sleep(0.5)
-
-    all_btn = driver.find_element_by_tag_name("button")
-    all_btn.click()
-
-    sleep(0.5)
-
-    all_btn = driver.find_element_by_tag_name("mat-expansion-panel-header")
-    all_btn.click()
-
-    sleep(0.5)
-
-    class_button = driver.find_element_by_id("filterGroup")
-    class_button.send_keys("A2")
-
-    sleep(0.5)
-
-    yes_btn = driver.find_elements_by_tag_name("button")
-    yes_btn[3].click()
-
-    sleep(0.5)
-
-    check_box_class = driver.find_elements_by_class_name("tree-node-checkbox")
-    check_box_class[11].click()
-
-    week_days = driver.find_element_by_class_name("cal-day-headers")
-    print(week_days.text.split("\n"))
-    week_days = week_days.text.split("\n")
-    week_days_number = []
-
-    for g in range(7):
-        a = week_days[g]
-        a = list(a)
-        j = 0
-        variable = ""
-        nombre = ""
-        for n in range(len(a)):
-            if a[n] == " " and a[n+1] != "0" and a[n+1] != "1" and a[n+1] != "2" and a[n+1] != "3" and a[n+1] != "4" and a[n+1] != "5" and a[n+1] != "6" and a[n+1] != "7" and a[n+1] != "8" and a[n+1] != "9":
-                nombre = a[n-2] + a[n-1]
-                j = int(n) + 1
-                while j != len(a):
-                    variable += a[j]
-                    j += 1
-        j = 0
-
-
-        if variable == "août":
-            variable = "08/2021"
-        if variable == "sept.":
-            variable = "09/2021"
-        if variable == "oct.":
-            variable = "10/2021"
-        if variable == "nov.":
-            variable = "11/2021"
-        if variable == "déc.":
-            variable = "12/2021"
-        if variable == "janv.":
-            variable = "01/2022"
-        if variable == "févr.":
-            variable = "02/2022"
-        if variable == "mars":
-            variable = "03/2022"
-        if variable == "avr.":
-            variable = "04/2022"
-        if variable == "mai":
-            variable = "05/2022"
-        if variable == "juin":
-            variable = "06/2022"
-        if variable == "juil.":
-            variable = "07/2022"
-
-        week_days_number.append(nombre + "/" + variable)
-
-    print(week_days_number)
-    title = driver.find_elements_by_class_name("event-style")
-    print(title)
-    subjects = []
-    events = []
-    liste = []
-    for a in range(len(title)):
-        subjects.append(title[a].text)
-        title[a].click()
-        sleep(1)
-        matiere = "**" + driver.find_element_by_class_name("m-0").text + "**" + "\n"
-        texte = driver.find_element_by_class_name("modal-body")
-        sous_texte = matiere + texte.text
-        events.append(sous_texte.split(" "))
-        liste.append(sous_texte.split(";"))
-        bouton_close = driver.find_element_by_class_name("btn-close")
-        bouton_close.click()
-        sleep(1)
-
-    print("liste : ", liste)
-    print("liste : ", events)
-
-    event = []
-    for c in range(len(title)):
-        for b in range(len(events)):
-            print(c, b)
-            if events[c][b] == "début":
-                event.append(events[c][b+2])
-
-    print(event)
-
-    await ctx.send("Voilà votre emploi du temps :")
-    sleep(1)
-
-    await ctx.send("```md\n" + "# Notre emploi du temps de la semaine"+ "\n```")
-    for i in range(len(week_days_number)):
-        message = ""
-        await ctx.send("```cs\n # " + week_days[i] + "```")
-        for j in range(len(event)):
-            if week_days_number[i] == event[j]:
-                message += liste[j][0]
-                message += "\n\n"
-                print(message)
-        if message == "":
-            message = "Ce jour-ci, il n'y a aucun événement."
-
-        liste_ = list(message)
-        number_of_times = len(liste_) // 2000 + 1
-        print(number_of_times, len(liste_))
-        for r in range(number_of_times):
-            if len(liste_) - 2000 >= 0:
-                list_commands = ""
-                for s in range(2000):
-                    list_commands += liste_[0]
-                    del liste_[0]
-                    print(len(liste_))
-                await ctx.send(list_commands)
-            else:
-                list_commands = ""
-                for s in range(len(liste_)):
-                    list_commands += liste_[0]
-                    del liste_[0]
-                await ctx.send(list_commands)
 
 @bot.command()
 async def current_time(ctx, contitry):
@@ -1158,6 +973,7 @@ bot.add_cog(kiss.GifCommands(bot))
 bot.add_cog(coucou.GifCommands(bot))
 bot.add_cog(togglebotchannel.AdminCommands(bot))
 bot.add_cog(clear.AdminCommands(bot))
+bot.add_cog(edt.ClassCommands(bot))
 
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())
