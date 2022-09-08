@@ -1,64 +1,77 @@
+import discord
+from discord.ext import commands
 import requests as r
-import json
 from datetime import datetime
+import vobject
 import pytz
+
+allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
+
+def checks_in_bot_channel(channels, channel):
+    global allowed_channels
+    for i in range(len(allowed_channels)):
+        channel_id = allowed_channels[i]
+        print(channel_id, channel)
+        if channel_id == channel:
+            return True
+    return False
 
 lastdlday = None
 lastedt = None
 
-def edt():
-    global lastdlday, lastedt
+class ClassCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    @commands.command()
+    async def edt(self, ctx, day=None):
+        global lastdlday, lastedt
 
-    if lastdlday is not None and (today-lastdlday).days <= 0:
-        return lastedt
+        if day is not None:
+            today=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            todayStr = today.isoformat()
+            todayFinal = ""
+            todayStr = todayStr.split("-")
+            todayStr[2] = todayStr[2][0] + todayStr[2][1]
+            for i in range(len(todayStr)-1):
+                todayFinal = "/" + todayStr[i] + todayFinal
+            todayFinal = todayStr[2] + todayFinal
 
-    resp = r.post(
-        "https://zeus.ionis-it.com/api/reservation/filter/displayable",
-        headers={
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0",
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbG92aXMubGVmZWJ2cmUiLCJ1bmlxdWVfbmFtZSI6ImNsb3Zpcy5sZWZlYnZyZSIsImp0aSI6ImIwMDUyMTMxLTk3Y2ItNGQxNC04ZGQ5LWYzYTRkMjExN2Q2NSIsImlhdCI6MTYzNjA0MjY0NCwibmJmIjoxNjM2MDQyNjQ0LCJyb2wiOiJWSVNJVE9SIiwiZ3JvdXBzIjoiW10iLCJpZF9zY2hvb2wiOiIxIiwiZXhwIjoxNjM2MTI5MDQ0LCJpc3MiOiJaZXVzIiwiYXVkIjoiemV1cy1hcHAifQ.gdWKeQIXtKI-lWBWSp0IXD4ve4XVgmyzl2mevsSBX-s",
-            "Content-Type": "application/json",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "no-cors",
-            "Sec-Fetch-Site": "same-origin",
-            "Pragma": "no-cache",
-            "Cache-Control": "no-cache",
-            "referrer": "https://zeus.ionis-it.com/home",
-        },
-        data=json.dumps(
-            {
-                "groups": [55],
-                "rooms": [],
-                "teachers": [],
-                "startDate": today.isoformat(),
-                "endDate": today.replace(
-                    hour=23, minute=59
-                ).isoformat(),
-            }
-        ),
-    )
+            if day != todayFinal:
+                day = day.split("/")
+                today = datetime(int(day[2]), int(day[1]), int(day[0]), 0, 0)
+        else:
+            today=datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
-    result = resp.json()
-    text = ""
+        print(today, lastdlday)
+        if lastdlday is not None and (datetime.now()-lastdlday).days <= 0:
+            cal = lastedt
+            print("ics already installed")
+        else:
+            f = open('link_edt.txt','r')
+            link_edt = f.read()
+            print(type(link_edt))
+            print(link_edt)
+            response = r.get(link_edt)
+            data = response.text
+            cal = vobject.readOne(data)
+            f.close()
 
-    for course in result:
-        text += course["name"] + "\n"
-        text += (
-            datetime.fromisoformat(course["startDate"][:-1]).strftime("%H:%M")
-            + " - "
-            + datetime.fromisoformat(course["endDate"][:-1]).strftime("%H:%M")
-            + "\n"
-        )
-        text += (
-            "Salles: " + ", ".join(map((lambda x: x["name"]), course["rooms"])) + "\n\n"
-        )
+            lastdlday = datetime.now()
+            lastedt = cal
 
-    lastedt = text
-    lastdlday = today
+            print("installing ics...")
 
-    return text
+        emb = discord.Embed(title=today.strftime("%d/%m/%Y"), color=0x3498db)
+        for ev in cal.vevent_list:
+            start_time = ev.dtstart.valueRepr().isoformat().split("-")
+            variable = start_time[0]
+            start_time[0] = start_time[2][0] + start_time[2][1]
+            start_time[2] = variable
+            time = datetime(int(start_time[2]), int(start_time[1]), int(start_time[0]), 0, 0)
+            date_start = ev.dtstart.value.astimezone(pytz.timezone("Europe/Paris")).strftime("%H:%M")
+            date_end = ev.dtend.value.astimezone(pytz.timezone("Europe/Paris")).strftime("%H:%M")
+            if time == today:
+                field = emb.add_field(name = ev.summary.valueRepr(), value = "time start : " + date_start + "\n" + "time end : " + date_end + "\n" + 'Description : ' + ev.description.valueRepr() + "\n" + "location : " + ev.location.value)
 
+        msg = await ctx.send(embed = emb)
