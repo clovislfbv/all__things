@@ -4,6 +4,7 @@ import requests as r
 from datetime import datetime
 import vobject
 import pytz
+from pathlib import Path
 
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
@@ -24,7 +25,7 @@ class ClassCommands(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def edt(ctx, day=None):
+    async def edt(self, ctx, day=None):
         ''' donne notre emploi du temps (format argument : dd/mm/yyyy), l'argument par défaut est à la date d'aujourd'hui '''
         global lastdlday, lastedt
 
@@ -57,11 +58,8 @@ class ClassCommands(commands.Cog):
                 cal = lastedt
                 print("ics already installed")
             else:
-                f = "https://zeus.ionis-it.com/api/group/325/ics/Yzi0mVNPNp"
-                link_edt = f
-                print(type(link_edt))
-                print(link_edt)
-                response = r.get(link_edt)
+                url = Path("edt_token.txt").read_text() 
+                response = r.get("https://zeus.ionis-it.com/api/group/325/ics/Yzi0mVNPNp")
                 response.encoding = "utf-8"
                 data = response.text
                 cal = vobject.readOne(data)

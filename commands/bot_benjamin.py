@@ -410,6 +410,9 @@ async def play(ctx, *, search):
                             search = search_results[9]
 
                         if reaction.emoji != '❌':
+                            messages = await ctx.channel.history(limit = 3).flatten()
+                            for message in messages:
+                                await(message.delete())
                             playing = 0
 
                             url = 'http://www.youtube.com/watch?v=' + search
