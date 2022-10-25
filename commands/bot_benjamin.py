@@ -17,6 +17,7 @@ from mutagen.mp3 import MP3
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
+import time
 import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
@@ -24,6 +25,7 @@ musics = {}
 ytdl = YoutubeDL()
 client = discord.Client()
 url_queue = []
+agenda = []
 message_skip = 0
 message_channel = 0
 playing = 0
@@ -279,6 +281,7 @@ async def current_time(ctx, contitry):
 @bot.command(pass_context=True, aliases=['p'])
 async def play(ctx, *, search):
     global current_music, playing
+    start = time.time()
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
@@ -307,11 +310,13 @@ async def play(ctx, *, search):
         await ctx.send("Veuillez patienter, je dois trouver les vidéos pour que vous puissiez choisir la musique qui vous convienne.")
         video = 'http://www.youtube.com/watch?v=' + search_results[counter]
         with YoutubeDL(ydl_opts) as ydl:
-            if ydl.extract_info(video, download=False)["is_live"] == True:
-                while ydl.extract_info(video, download=False)["is_live"] == True:
+            first = ydl.extract_info(video, download=False)
+
+            if first["is_live"] == True:
+                while first["is_live"] == True:
                     counter += 1
                     video = 'http://www.youtube.com/watch?v=' + search_results[counter]
-            temps_chanson = ydl.extract_info(video, download=False)["duration"]
+            temps_chanson = first["duration"]
             minutes = str((temps_chanson // 60))
             secondes = temps_chanson - (temps_chanson // 60)*60
             if secondes < 10:
@@ -329,41 +334,45 @@ async def play(ctx, *, search):
                     minutes = "0" + str(minutes)
                 temps_chanson = str(minutes) + ":" + str(secondes)
             print(type(temps_chanson))
-            liste = [f"1 :  %s" %(ydl.extract_info(video, download=False)["title"]) + " " + "(" + str(temps_chanson) + ")"]
+            title = first["title"]
+            liste = [f"1 :  %s" %(title) + " " + "(" + str(temps_chanson) + ")"]
         i = counter + 1
         for x in range(9):
             video = 'http://www.youtube.com/watch?v=' + search_results[i]
-            print(video)
-            if ydl.extract_info(video, download=False)["is_live"] == True:
+            user_video = ydl.extract_info(video, download=False)
+            if user_video["is_live"] == True:
                 i += 1
             video = 'http://www.youtube.com/watch?v=' + search_results[i]
-            with YoutubeDL(ydl_opts) as ydl:
-                temps_chanson = ydl.extract_info(video, download=False)["duration"]
-                minutes = str(temps_chanson // 60)
-                secondes = temps_chanson - (temps_chanson // 60)*60
-                if secondes < 10:
-                    secondes = "0" + str(secondes)
-                if int(minutes) >= 60:
-                    hours = 0
-                    for i in range(int(minutes)//60):
-                        minutes = int(minutes) - 60
-                        hours += 1
-                    if minutes < 10:
-                        minutes = "0" + str(minutes)
-                    temps_chanson = str(hours) + ":" + str(minutes) + ":" + str(secondes)
-                else:
-                    if int(minutes) < 10:
-                        minutes = "0" + str(minutes)
-                    temps_chanson = minutes + ":" + str(secondes)
-            with YoutubeDL(ydl_opts) as ydl:
-                meta = liste.append(f'{x+2} : %s' %(ydl.extract_info(video, download=False)["title"]) + " " + "(" + temps_chanson + ")")
+            temps_chanson = user_video["duration"]
+            minutes = str(temps_chanson // 60)
+            secondes = temps_chanson - (temps_chanson // 60)*60
+            if secondes < 10:
+                secondes = "0" + str(secondes)
+            if int(minutes) >= 60:
+                hours = 0
+                for i in range(int(minutes)//60):
+                    minutes = int(minutes) - 60
+                    hours += 1
+                if minutes < 10:
+                    minutes = "0" + str(minutes)
+                temps_chanson = str(hours) + ":" + str(minutes) + ":" + str(secondes)
+            else:
+                if int(minutes) < 10:
+                    minutes = "0" + str(minutes)
+                temps_chanson = minutes + ":" + str(secondes)
+            meta = liste.append(f'{x+2} : %s' %(user_video["title"]) + " " + "(" + temps_chanson + ")")
             i += 1
 
         emb = discord.Embed(title=None, description = f"{liste[0]} \n{liste[1]}\n{liste[2]}\n{liste[3]}\n{liste[4]}\n{liste[5]}\n{liste[6]}\n{liste[7]}\n{liste[8]}\n{liste[9]}", color=0x3498db)
         await ctx.send("Veuillez sélectionnez la vidéo de votre choix : ")
         msg = await ctx.send(embed = emb)
 
-        reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟']
+        end = time.time()
+        temps = end - start
+        print(f"Temps d'exécution : {temps}")
+
+        reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '\N{CROSS MARK}']
+
         for emoji in reactions:
             await msg.add_reaction(emoji)
 
@@ -392,35 +401,38 @@ async def play(ctx, *, search):
                             search = search_results[7]
                         elif reaction.emoji == '9️⃣':
                             search = search_results[8]
+                        elif reaction.emoji == '❌':
+                            messages = await ctx.channel.history(limit = 3).flatten()
+                            for message in messages:
+                                await(message.delete())
+                            await ctx.send(f"Command cancelled by {user.mention}")
                         else:
                             search = search_results[9]
 
-                        messages = await ctx.channel.history(limit = 3).flatten()
-                        for message in messages:
-                            await(message.delete())
-                        playing = 0
+                        if reaction.emoji != '❌':
+                            playing = 0
 
-                        url = 'http://www.youtube.com/watch?v=' + search
-                        print("play")
-                        client = ctx.guild.voice_client
-                        video = Video(url)
-                        with YoutubeDL(ydl_opts) as ydl:
-                            title = f"%s" %(ydl.extract_info(url, download=False)['title'])
+                            url = 'http://www.youtube.com/watch?v=' + search
+                            print("play")
+                            client = ctx.guild.voice_client
+                            video = Video(url)
+                            with YoutubeDL(ydl_opts) as ydl:
+                                title = f"%s" %(ydl.extract_info(url, download=False)['title'])
 
-                        if client and client.channel and len(url_queue) >= 0:
-                            url_queue.append(url)
-                            print("dans la file d'attente")
-                            await ctx.send(f"**{title}** {video.url} a été ajouté à la file d'attente par **{nickname}**")
-                        else:
-                            channel = ctx.author.voice.channel
-                            print(channel, type(channel))
-                            musics[ctx.guild] = []
-                            client = await channel.connect()
-                            current_music = title
-                            msg = await ctx.send(f"Je lance **{title}** : {video.url} demandé par **{nickname}**")
-                            play_song(ctx, client, musics[ctx.guild], video)
-                            ctx.voice_client.source.volume = 50 / 100
-                            print(50/100)
+                            if client and client.channel and len(url_queue) >= 0:
+                                url_queue.append(url)
+                                print("dans la file d'attente")
+                                await ctx.send(f"**{title}** {video.url} a été ajouté à la file d'attente par **{nickname}**")
+                            else:
+                                channel = ctx.author.voice.channel
+                                print(channel, type(channel))
+                                musics[ctx.guild] = []
+                                client = await channel.connect()
+                                current_music = title
+                                msg = await ctx.send(f"Je lance **{title}** : {video.url} demandé par **{nickname}**")
+                                play_song(ctx, client, musics[ctx.guild], video)
+                                ctx.voice_client.source.volume = 50 / 100
+                                print(50/100)
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
