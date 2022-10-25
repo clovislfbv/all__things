@@ -17,7 +17,6 @@ from mutagen.mp3 import MP3
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
-import time
 import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
@@ -281,7 +280,6 @@ async def current_time(ctx, contitry):
 @bot.command(pass_context=True, aliases=['p'])
 async def play(ctx, *, search):
     global current_music, playing
-    start = time.time()
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel) == True:
@@ -366,10 +364,6 @@ async def play(ctx, *, search):
         emb = discord.Embed(title=None, description = f"{liste[0]} \n{liste[1]}\n{liste[2]}\n{liste[3]}\n{liste[4]}\n{liste[5]}\n{liste[6]}\n{liste[7]}\n{liste[8]}\n{liste[9]}", color=0x3498db)
         await ctx.send("Veuillez sélectionnez la vidéo de votre choix : ")
         msg = await ctx.send(embed = emb)
-
-        end = time.time()
-        temps = end - start
-        print(f"Temps d'exécution : {temps}")
 
         reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '\N{CROSS MARK}']
 
