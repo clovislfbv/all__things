@@ -18,7 +18,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
 import time
-import jokes, blague, top, musicCommands, ban, unban, kick, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
+import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -736,6 +736,7 @@ bot.add_cog(top.AudioCommands(bot))
 bot.add_cog(jokes.OtherCommands(bot))
 bot.add_cog(blague.OtherCommands(bot))
 bot.add_cog(musicCommands.AudioCommands(bot))
+bot.add_cog(leave.AudioCommands(bot))
 bot.add_cog(ban.AdminCommands(bot))
 bot.add_cog(unban.AdminCommands(bot))
 bot.add_cog(kick.AdminCommands(bot))
