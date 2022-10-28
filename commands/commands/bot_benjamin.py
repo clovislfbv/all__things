@@ -17,9 +17,8 @@ from mutagen.mp3 import MP3
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from datetime import date
-
 import time
-import jokes, blague, top, musicCommands, ban, unban, kick, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
+import jokes, blague, top, play_music, connect, leave, ban, unban, kick, volume, pause, resume, skip, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 musics = {}
@@ -138,6 +137,32 @@ async def current_time(ctx, contitry):
             await client.disconnect()
         else:
             await ctx.send("Stv y a une petite surprise lorsque tu te mets dans un chat vocal et que tu réexécutes cette commande.")
+    else:
+        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+
+
+
+
+class Video:
+    def __init__(self, link):
+        ydl_opts = {
+            'format': 'bestvideo[width<=1080]+bestaudio/best',
+            'quiet': True,
+            'no_warnings': True,
+            'progress_hooks': [my_hook]
+        }
+        with YoutubeDL(ydl_opts) as ydl:
+            video = ydl.extract_info(link, download=False)
+        video_format = video["formats"][0]
+        self.url = video["webpage_url"]
+        self.stream_url = video_format["url"]
+
+@bot.command()
+async def est_ce_que_tu_dis_faux(ctx):
+    current_channel = ctx.message.channel.id
+    channels = ctx.guild.channels
+    if checks_in_bot_channel(channels, current_channel) == True:
+        await ctx.send("Nan je ne dis jamais faux.")
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
@@ -711,6 +736,7 @@ bot.add_cog(top.AudioCommands(bot))
 bot.add_cog(jokes.OtherCommands(bot))
 bot.add_cog(blague.OtherCommands(bot))
 bot.add_cog(musicCommands.AudioCommands(bot))
+bot.add_cog(leave.AudioCommands(bot))
 bot.add_cog(ban.AdminCommands(bot))
 bot.add_cog(unban.AdminCommands(bot))
 bot.add_cog(kick.AdminCommands(bot))
