@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
 import requests as r
+from requests.auth import HTTPBasicAuth
 from datetime import datetime
 import vobject
 import pytz
-from pathlib import Path
 
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
@@ -58,11 +58,18 @@ class ClassCommands(commands.Cog):
                 cal = lastedt
                 print("ics already installed")
             else:
-                url = Path("edt_token.txt").read_text() 
-                response = r.get("https://zeus.ionis-it.com/api/group/325/ics/Yzi0mVNPNp")
+                url = open('edt_token.txt').read() 
+                response = r.get(url)
+                print(response.status_code)
+                print(response.text)
                 response.encoding = "utf-8"
+                print(response)
+                print("test1")
                 data = response.text
+                print("test2")
+                print(data)
                 cal = vobject.readOne(data)
+                print("test3")
 
                 lastdlday = datetime.now()
                 lastedt = cal
@@ -71,6 +78,7 @@ class ClassCommands(commands.Cog):
 
             emb = discord.Embed(title=today.strftime("%d/%m/%Y"), color=0x3498db)
             dates = []
+            print("test4")
             for ev in cal.vevent_list:
                 start_time = ev.dtstart.valueRepr().isoformat().split("-")
                 variable = start_time[0]

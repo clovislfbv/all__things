@@ -1,8 +1,13 @@
 import discord
 from discord.ext import commands
-import check
+from blagues_api import BlaguesAPI
+from pyjokes import *
+import asyncio
 
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
+
+def setup(bot):
+    bot.add_cog(OtherCommands(bot))
 
 def checks_in_bot_channel(channels, channel):
     global allowed_channels
@@ -13,13 +18,38 @@ def checks_in_bot_channel(channels, channel):
             return True
     return False
 
+async def show(blagues):
+    return await blagues.random()
+
 class OtherCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command(name="blague", description="génère une blague aléatoirement")
+    async def blague(self, ctx):
+        current_channel = ctx.message.channel.id
+        channels = ctx.guild.channels
+        if checks_in_bot_channel(channels, current_channel):
+            with open('token_blague.txt', 'r') as token_blague:
+                blagues = BlaguesAPI(token_blague.read())
+
+            result = await asyncio.gather(show(blagues))
+            await ctx.send(result[0].joke)
+            await ctx.send(result[0].answer)
+        else:
+            await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+
+    @commands.command()
+    async def joke(self, ctx):
+        current_channel = ctx.message.channel.id
+        channels = ctx.guild.channels
+        if checks_in_bot_channel(channels, current_channel) == True:
+            await ctx.send(get_joke(category = "all"))
+        else:
+            await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+
     @commands.command()
     async def say(self, ctx, chiffre, *texte):
-        checker = self.bot.add_cog(check.checks(self.bot))
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
         if checks_in_bot_channel(channels, current_channel) == True:

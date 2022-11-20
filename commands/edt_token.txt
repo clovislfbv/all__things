@@ -1,1 +1,1 @@
-"http://zeus.ionis-it.com/api/group/325/ics/Yzi0mVNPNp"
+https://zeus.ionis-it.com/api/group/325/ics/Yzi0mVNPNp
