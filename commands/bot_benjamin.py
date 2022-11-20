@@ -1,16 +1,17 @@
 import discord
 from discord.ext import commands, tasks
+from discord_slash import SlashCommand, SlashContext
+from discord_slash.utils.manage_commands import create_choice, create_option
 from youtube_dl import *
 import asyncio
 from random import randint, choice, shuffle
 import urllib.parse, urllib.request, re
 from time import sleep
-import logging
-import json
-import requests
-import shutil
 from gtts import gTTS
 from time import sleep
+<<<<<<< HEAD
+import top, musicCommands, ban, unban, kick, punch, hug, kiss, coucou, clear, togglebotchannel, edt
+=======
 from datetime import datetime
 import pytz
 from mutagen.mp3 import MP3
@@ -20,18 +21,18 @@ from datetime import date
 
 import time
 import jokes, blague, top, musicCommands, ban, unban, kick, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
+>>>>>>> 981d4393020c77b60133816a3e45489e89782a79
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
-musics = {}
+slash = SlashCommand(bot, sync_commands = True)
 ytdl = YoutubeDL()
 client = discord.Client()
-url_queue = []
 agenda = []
 message_skip = 0
 message_channel = 0
 playing = 0
 pays = {"FR" : '37i9dQZEVXbIPWwFssbupI?si=1e836528e2384a70', "UK" : "37i9dQZEVXbLnolsZ8PSNw?si=bcc5a83311b54e67", "USA" : "37i9dQZEVXbLRQDuF5jeBp?si=0b5e105bed784940",  "WORLD" : '37i9dQZEVXbMDoHDwVN2tF?si=510c4902c6ba4d80', "ES" : "37i9dQZEVXbNFJfN1Vw8d9?si=3087bda4c2df4961", "IN" : "37i9dQZEVXbLZ52XmnySJg?si=085b180ae65b4609", "PH" : "37i9dQZEVXbNBz9cRCSFkY?si=b30c3057903f4ef5", "TU" : "37i9dQZEVXbIVYVBNw9D5K?si=3f4a25f140904d2f", "JA" : "37i9dQZEVXbKXQ4mDTEBXq?si=5971ca3ffc744d15", "PB" : "37i9dQZEVXbKCF6dqVpDkS?si=0b8e08dc941e4b47", "IT" : "37i9dQZEVXbIQnj7RRhdSX?si=3d1f7cb768e14959", "RU" : "37i9dQZEVXbL8l7ra5vVdB?si=28dc400fabb8424b"}
-current_music = ""
+
 
 def my_hook(d):
     if d['status'] == 'downloading':
@@ -46,6 +47,10 @@ ydl_opts = {
     'no_warnings': True,
     'progress_hooks': [my_hook]
 }
+
+@bot.event
+async def on_connect():
+    bot.load_extension("OtherCommands")
 
 @bot.event
 async def on_ready():
@@ -86,12 +91,21 @@ async def start(ctx, secondes = 5):
 async def changeStatus():
 	game = discord.Game(choice(status))
 	await bot.change_presence(activity = game)
-
+'''
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def broadcast(ctx):
+    for guild in bot.guilds:
+        index = 0
+        while not isinstance(guild.channels[index], discord.TextChannel):
+            index += 1
+        await guild.channels[index].send("Au le con j'avais oublié le lien : https://www.instagram.com/p/CjIyZMxsdpN/")
+'''
 @bot.command()
 async def current_time(ctx, contitry):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         hours = ""
         minutes = ""
         secondes = ""
@@ -141,6 +155,35 @@ async def current_time(ctx, contitry):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
+<<<<<<< HEAD
+
+
+
+class Video:
+    def __init__(self, link):
+        ydl_opts = {
+            'format': 'bestvideo[width<=1080]+bestaudio/best',
+            'quiet': True,
+            'no_warnings': True,
+            'progress_hooks': [my_hook]
+        }
+        with YoutubeDL(ydl_opts) as ydl:
+            video = ydl.extract_info(link, download=False)
+        video_format = video["formats"][0]
+        self.url = video["webpage_url"]
+        self.stream_url = video_format["url"]
+
+@bot.command()
+async def est_ce_que_tu_dis_faux(ctx):
+    current_channel = ctx.message.channel.id
+    channels = ctx.guild.channels
+    if checks_in_bot_channel(channels, current_channel):
+        await ctx.send("Nan je ne dis jamais faux.")
+    else:
+        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+
+=======
+>>>>>>> 981d4393020c77b60133816a3e45489e89782a79
 player1 = ""
 player2 = ""
 turn = ""
@@ -164,7 +207,7 @@ async def morpion(ctx, p1: discord.Member, p2: discord.Member):
     """ input : @player1 @player2"""
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         print("morpion began")
         global count
         global player1
@@ -219,7 +262,7 @@ async def place(ctx, pos: int):
 
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
 
         if not gameOver:
             mark = ""
@@ -244,7 +287,7 @@ async def place(ctx, pos: int):
 
                     checkWinner(winningConditions, mark)
                     print(count)
-                    if gameOver == True:
+                    if gameOver:
                         await ctx.send(mark + " wins!")
                     elif count >= 9:
                         gameOver = True
@@ -286,28 +329,26 @@ async def place_error(ctx, error):
     elif isinstance(error, commands.BadArgument):
         await ctx.send("Please make sure to enter an integer.")
 
+@slash.slash(name="slap", description="donne une claque à un membre du serveur", guild_ids=[631935311592554601], options=[
+    create_option(name="member", description="le membre du serveur à qui tu veux donner une claque", option_type=3, required=True)    
+])
 @bot.command()
-async def slap(ctx, member):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
-        if {ctx.author.mention} == member:
-            ctx.send("T'es teubé ou quoi ? Tu peux pas te donner de claques à toi-même ?! Y a que toi pour être si teubé que ça !!")
-        else:
-            slaps = ["https://i.gifer.com/XaaW.gif", "https://i.gifer.com/2eNz.gif", "https://i.gifer.com/2Dji.gif", "https://i.gifer.com/1Vbb.gif", "https://i.gifer.com/K03.gif", "https://i.gifer.com/DjuN.gif", "https://i.gifer.com/Djw.gif", "https://i.gifer.com/4kpG.gif", "https://i.gifer.com/K02.gif"]
-            slappy = slaps[randint(0, len(slaps)-1)]
-            emb = discord.Embed(title=None, description = f"{ctx.author.mention} met une claque à {member}", color=0x3498db)
-            emb.set_image(url=f"{slappy}")
-            await ctx.send( embed = emb)
+async def slap(ctx:SlashContext, member):
+    if {ctx.author.mention} == member:
+        ctx.send("T'es teubé ou quoi ? Tu peux pas te donner de claques à toi-même ?! Y a que toi pour être si teubé que ça !!")
     else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+        slaps = ["https://i.gifer.com/XaaW.gif", "https://i.gifer.com/2eNz.gif", "https://i.gifer.com/2Dji.gif", "https://i.gifer.com/1Vbb.gif", "https://i.gifer.com/K03.gif", "https://i.gifer.com/DjuN.gif", "https://i.gifer.com/Djw.gif", "https://i.gifer.com/4kpG.gif", "https://i.gifer.com/K02.gif"]
+        slappy = slaps[randint(0, len(slaps)-1)]
+        emb = discord.Embed(title=None, description = f"{ctx.author.mention} met une claque à {member}", color=0x3498db)
+        emb.set_image(url=f"{slappy}")
+        await ctx.send( embed = emb)
 
 @bot.command()
 @commands.has_permissions(manage_messages=True)
 async def nombre_serveurs(ctx):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         counter = 0
         names = ""
         for guild in bot.guilds:
@@ -322,7 +363,7 @@ async def nombre_serveurs(ctx):
 async def lettre_random(ctx):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         for i in range(5):
             lettres = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
             lettre_bot = lettres[randint(0, len(lettres))]
@@ -348,72 +389,11 @@ def mutagen_length(path):
     except:
         return None
 
-@bot.event
-async def on_reaction_add(reaction, user):
-    global playing
-    print(user)
-    print(playing == 1)
-    if playing == 1:
-        if not user.bot and user == message_author:
-            if reaction.emoji == '1️⃣':
-                search = search_results[0]
-            elif reaction.emoji == '2️⃣':
-                search = search_results[1]
-            elif reaction.emoji == '3️⃣':
-                search = search_results[2]
-            elif reaction.emoji == '4️⃣':
-                search = search_results[3]
-            elif reaction.emoji == '5️⃣':
-                search = search_results[4]
-            elif reaction.emoji == '6️⃣':
-                search = search_results[5]
-            elif reaction.emoji == '7️⃣':
-                search = search_results[6]
-            elif reaction.emoji == '8️⃣':
-                search = search_results[7]
-            elif reaction.emoji == '9️⃣':
-                search = search_results[8]
-            elif reaction.emoji == '❌':
-                messages = await ctx.channel.history(limit = 3).flatten()
-                for message in messages:
-                    await(message.delete())
-                await ctx.send(f"Command cancelled by {user.mention}")
-            else:
-                search = search_results[9]
-
-            if reaction.emoji != '❌':
-                messages = await ctx.channel.history(limit = 3).flatten()
-                for message in messages:
-                    await(message.delete())
-                playing = 0
-
-                url = 'http://www.youtube.com/watch?v=' + search
-                print("play")
-                client = ctx.guild.voice_client
-                video = Video(url)
-                with YoutubeDL(ydl_opts) as ydl:
-                    title = f"%s" %(ydl.extract_info(url, download=False)['title'])
-
-                if client and client.channel and len(url_queue) >= 0:
-                    url_queue.append(url)
-                    print("dans la file d'attente")
-                    await ctx.send(f"**{title}** {video.url} a été ajouté à la file d'attente par **{nickname}**")
-                else:
-                    channel = ctx.author.voice.channel
-                    print(channel, type(channel))
-                    musics[ctx.guild] = []
-                    client = await channel.connect()
-                    current_music = title
-                    msg = await ctx.send(f"Je lance **{title}** : {video.url} demandé par **{nickname}**")
-                    play_song(ctx, client, musics[ctx.guild], video)
-                    ctx.voice_client.source.volume = 50 / 100
-                    print(50/100)
-
 @bot.command()
 async def accent(ctx, langue, *, message):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         if langue == "qu":
             tts = gTTS(message, lang="fr", tld="ca")
         else:
@@ -440,7 +420,7 @@ async def accent(ctx, langue, *, message):
 async def serverInfo(ctx):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         server = ctx.guild
         numberOfTextChannels = len(server.text_channels)
         numberOfVoiceChannels = len(server.voice_channels)
@@ -457,7 +437,7 @@ async def serverInfo(ctx):
 async def ping(ctx):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         await ctx.send("Pong !")
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
@@ -466,7 +446,7 @@ async def ping(ctx):
 async def getInfo(ctx, text):
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         server = ctx.guild
         numberOfTextChannels = len(server.text_channels)
         numberOfVoiceChannels = len(server.voice_channels)
@@ -491,7 +471,7 @@ async def aide(ctx):
     '''get more informations about commands'''
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel) == True:
+    if checks_in_bot_channel(channels, current_channel):
         commands = "```fix\n$serverInfo```permet de connaître quelques informations sur le serveur \n\n```fix\n$say + nombre de fois + message à dire```permet de faire dire quelque chose au bot fois un nombre (par exemple, input : $say 4 coucou, output : coucou coucou coucou coucou) \n\n```fix\n$getInfo + input```permet d'avoir des infos sur l'input que vous donnez (input possible : memberCount, numberOfChannel, name) \n\n```fix\n$clear + nombre de messages précédents```efface le nombre de message précedent (exemple input : $clear 5 output : effacement des 5 précédents messages)\n\n```fix\n$ping```fait une partie de tennis de table avec moi. \n\n```fix\n$kiss + ping d'un membre du serveur```fait un bisou à la personne que tu mentionnes (l'input doit être sous la forme '$kiss @destinataire') \n\n```fix\n$slap + mention d'un membre du serveur```donne une claque au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$coucou + mention d'un membre du serveur```permet de faire coucou au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$punch + mention d'un membre du serveur```donne un coup de poing au destinataire, s'écrit sous la même forme que la fonction $kiss \n\n```fix\n$play + nom de la musique à jouer```joue une musique choisi par l'utilisateur dans le salon vocal où est l'utilisateur (exemple d'input : $play despacito) \n\n```fix\n$morpion + ping des deux joueurs qui veulent jouer```démarre une partie de morpion (ou tic tac toe en anglais). Pour y jouer il faut mettre en input 2 mentions de 'vraies' personnes et non des bots. De plus, pour pouvoir placer un pion sur le plateau, il faut utiliser la commande $place puis écrire en input le rang où le joueur veut poser son pion. Pour vous aider, voici le plateau avec à la place des cases leur rang pour vous aider à poser vos pions \n    1   2   3   \n   4   5   6   \n   7   8   9   \n\n```fix\n$top + code du pays```donne le top 25 actuel des meilleurs chansons du pays que vous avez indiqué sur Spotify. Voici les pays disponibles et leur code correspondant : (France : FR, Royaume-Uni : UK, Etats-Unis : USA, Monde : WORLD, Espagne : ES, Inde : IN, Philippines : PH , Turquie : TU, Japon : JA, Pays-Bas : PB, Italie : IT, Russie : RU). Je tiens à préciser que d'autres pays vont être ajouter à cette commande dans le futur. \n\n```fix\n$play_music + code classement pays dans $top + rang de la musique voulu```permet de jouer rapidement une musique du classement du pays de votre choix (vous pouvez trouvez les codes des pays disponibles dans l'aide pour la commande $top) en mettant son rang que vous pouvez retrouver grâce à la commande $top. Petite nouveauté sur cette commande : il est possible de jouer toutes les musiques dans un ordre aléatoire du $top du pays de votre choix en écrivant par exemple : $play_music FR all \n\n```fix\n$blague```lorsque vous activer cette commande je vous raconte n'importe quelle blague que je connais en français\n\n```fix\n$joke```lorsque vous écrivez cette commande je vous raconte n'importe quelle blague que je connais en anglais \n\n```fix\n$start_hangman```démarre une partie du jeu du pendu mais svp n'essayez pas cette commande car elle est en développement. Elle risque de faire crache le bot et le server. \n\n```fix\n$nombre_serveurs```donne le nombre de serveur dans lequel je suis et je donne leur nom.```fix\n$accent + code langue + message à dire``` je lis votre message avec l'accent dans la langue de votre choix. les langues disponibles sont : 'af': 'Afrikaans', 'ar': 'Arabic', 'bg': 'Bulgarian', 'bn': 'Bengali', 'bs': 'Bosnian', 'ca': 'Catalan', 'cs': 'Czech', 'cy': 'Welsh', 'da': 'Danish', 'de': 'German', 'el': 'Greek', 'en': 'English', 'eo': 'Esperanto', 'es': 'Spanish', 'et': 'Estonian', 'fi': 'Finnish', 'fr': 'French', 'gu': 'Gujarati', 'hi': 'Hindi', 'hr': 'Croatian', 'hu': 'Hungarian', 'hy': 'Armenian', 'id': 'Indonesian', 'is':'Icelandic', 'it': 'Italian', 'ja': 'Japanese', 'jw': 'Javanese', 'km': 'Khmer', 'kn': 'Kannada', 'ko': 'Korean', 'la': 'Latin', 'lv': 'Latvian', 'mk': 'Macedonian', 'ml': 'Malayalam', 'mr': 'Marathi', 'my': 'Myanmar (Burmese)', 'ne': 'Nepali', 'nl': 'Dutch', 'no': 'Norwegian', 'pl': 'Polish', 'pt': 'Portuguese', 'qu': 'Québécois', 'ro': 'Romanian', 'ru': 'Russian', 'si': 'Sinhala', 'sk': 'Slovak', 'sq': 'Albanian', 'sr': 'Serbian', 'su': 'Sundanese', 'sv': 'Swedish', 'sw': 'Swahili', 'ta': 'Tamil', 'te': 'Telugu', 'th': 'Thai', 'tl': 'Filipino', 'tr': 'Turkish', 'uk': 'Ukrainian', 'ur': 'Urdu', 'vi': 'Vietnamese', 'zh-CN': 'Chinese', 'zh-TW': 'Chinese (Mandarin/Taiwan)', 'zh': 'Chinese (Mandarin)' \n\n```fix\n$current_time + nom du continent en anglais/nom de la capitale en anglais``` donne l'heure actuelle dans la ville écrite en Input."
         liste = list(commands)
         number_of_times = len(liste) // 2000 + 1
@@ -708,14 +688,11 @@ async def end_hangman(ctx):
     await ctx.send("La partie de pendu a été terminé manuellement. Tu peux en redémarrer une nouvelle avec la commande $start_hangman.")
 
 bot.add_cog(top.AudioCommands(bot))
-bot.add_cog(jokes.OtherCommands(bot))
-bot.add_cog(blague.OtherCommands(bot))
 bot.add_cog(musicCommands.AudioCommands(bot))
 bot.add_cog(ban.AdminCommands(bot))
 bot.add_cog(unban.AdminCommands(bot))
 bot.add_cog(kick.AdminCommands(bot))
 bot.add_cog(punch.GifCommands(bot))
-bot.add_cog(say.OtherCommands(bot))
 bot.add_cog(hug.GifCommands(bot))
 bot.add_cog(kiss.GifCommands(bot))
 bot.add_cog(coucou.GifCommands(bot))

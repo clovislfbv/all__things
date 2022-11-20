@@ -9,6 +9,8 @@ import asyncio
 
 url_queue = []
 musics = {}
+current_music = ""
+looping = False
 
 pays = {"FR" : '37i9dQZEVXbIPWwFssbupI?si=1e836528e2384a70', "UK" : "37i9dQZEVXbLnolsZ8PSNw?si=bcc5a83311b54e67", "USA" : "37i9dQZEVXbLRQDuF5jeBp?si=0b5e105bed784940",  "WORLD" : '37i9dQZEVXbMDoHDwVN2tF?si=510c4902c6ba4d80', "ES" : "37i9dQZEVXbNFJfN1Vw8d9?si=3087bda4c2df4961", "IN" : "37i9dQZEVXbLZ52XmnySJg?si=085b180ae65b4609", "PH" : "37i9dQZEVXbNBz9cRCSFkY?si=b30c3057903f4ef5", "TU" : "37i9dQZEVXbIVYVBNw9D5K?si=3f4a25f140904d2f", "JA" : "37i9dQZEVXbKXQ4mDTEBXq?si=5971ca3ffc744d15", "PB" : "37i9dQZEVXbKCF6dqVpDkS?si=0b8e08dc941e4b47", "IT" : "37i9dQZEVXbIQnj7RRhdSX?si=3d1f7cb768e14959", "RU" : "37i9dQZEVXbL8l7ra5vVdB?si=28dc400fabb8424b"}
 
@@ -87,9 +89,30 @@ class AudioCommands(commands.Cog):
     async def connect(self, ctx):
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
-        if checks_in_bot_channel(channels, current_channel) == True:
+        if checks_in_bot_channel(channels, current_channel):
             channel = ctx.author.voice.channel
             client = await channel.connect()
+        else:
+            await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+
+    @commands.command()
+    async def loop(self, ctx):
+        global current_music_url
+        if ctx.voice_client is None:
+            return await ctx.send("Not connected to voice channel")
+        current_channel = ctx.message.channel.id
+        channels = ctx.guild.channels
+        length = len(musics[ctx.guild])
+        looping = True
+        if checks_in_bot_channel(channels, current_channel):
+            if length < 1:
+                await ctx.send("Je loop la musique en train d'être joué")
+            else:
+                await ctx.send("Je loop la file d'attente")
+            while looping:
+                if len(musics[ctx.guild]) == length:
+                    musics[ctx.guild].append(Video(current_music))
+                    url_queue.append(current_music)
         else:
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
@@ -98,11 +121,12 @@ class AudioCommands(commands.Cog):
         global url_queue
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
-        if checks_in_bot_channel(channels, current_channel) == True:
+        if checks_in_bot_channel(channels, current_channel):
             client = ctx.guild.voice_client
             await client.disconnect()
             musics[ctx.guild] = []
             url_queue = []
+            looping = False
         else:
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
@@ -110,7 +134,7 @@ class AudioCommands(commands.Cog):
     async def volume(self, ctx, volume: int):
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
-        if checks_in_bot_channel(channels, current_channel) == True:
+        if checks_in_bot_channel(channels, current_channel):
             if ctx.voice_client is None:
                 return await ctx.send("Not connected to voice channel")
 
@@ -125,7 +149,7 @@ class AudioCommands(commands.Cog):
     async def pause(self, ctx):
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
-        if checks_in_bot_channel(channels, current_channel) == True:
+        if checks_in_bot_channel(channels, current_channel):
             client = ctx.guild.voice_client
             if not client.is_paused():
                 client.pause()
@@ -137,7 +161,7 @@ class AudioCommands(commands.Cog):
     async def resume(self, ctx):
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
-        if checks_in_bot_channel(channels, current_channel) == True:
+        if checks_in_bot_channel(channels, current_channel):
             client = ctx.guild.voice_client
             if client.is_paused():
                 client.resume()
@@ -147,9 +171,10 @@ class AudioCommands(commands.Cog):
 
     @commands.command(pass_context=True)
     async def play_music(self, ctx, code_pays, rang):
+        global current_music
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
-        if checks_in_bot_channel(channels, current_channel) == True:
+        if checks_in_bot_channel(channels, current_channel):
             global url_queue, ydl_opts, current_music, pays
             if code_pays not in pays:
                 await ctx.send("Dsl, mais je ne connais pas le code de ce pays. utilise la commande '$aide' pour voir tout les codes des pays disponibles et leur orthographe exacte.")
@@ -233,7 +258,7 @@ class AudioCommands(commands.Cog):
                 video = Video(url)
                 musics[ctx.guild] = []
                 client = await channel.connect()
-                current_music = title
+                current_music = video.url
                 msg = await ctx.send(f"Je lance **{title}** :  {video.url}")
                 play_song(ctx, self.bot, client, musics[ctx.guild], video)
                 ctx.voice_client.source.volume = 50 / 100
@@ -242,11 +267,11 @@ class AudioCommands(commands.Cog):
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
     @commands.command(pass_context=True, aliases=['p'])
-    async def play(self, ctx, *, search):
+    async def play(self, ctx, *search):
         global current_music, playing
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
-        if checks_in_bot_channel(channels, current_channel) == True:
+        if checks_in_bot_channel(channels, current_channel):
             message_author = ctx.message.author
             nickname = ctx.message.author.display_name
             counter = 0
@@ -271,11 +296,12 @@ class AudioCommands(commands.Cog):
 
             await ctx.send("Veuillez patienter, je dois trouver les vidéos pour que vous puissiez choisir la musique qui vous convienne.")
             video = 'http://www.youtube.com/watch?v=' + search_results[counter]
+
             with YoutubeDL(ydl_opts) as ydl:
                 first = ydl.extract_info(video, download=False)
 
-                if first["is_live"] == True:
-                    while first["is_live"] == True:
+                if first["is_live"]:
+                    while first["is_live"]:
                         counter += 1
                         video = 'http://www.youtube.com/watch?v=' + search_results[counter]
                 temps_chanson = first["duration"]
@@ -302,7 +328,7 @@ class AudioCommands(commands.Cog):
             for x in range(9):
                 video = 'http://www.youtube.com/watch?v=' + search_results[i]
                 user_video = ydl.extract_info(video, download=False)
-                if user_video["is_live"] == True:
+                if user_video["is_live"]:
                     i += 1
                 video = 'http://www.youtube.com/watch?v=' + search_results[i]
                 temps_chanson = user_video["duration"]
@@ -336,7 +362,7 @@ class AudioCommands(commands.Cog):
 
             @self.bot.event
             async def on_reaction_add(reaction, user):
-                global playing
+                global playing, current_music
                 print(user)
                 print(playing == 1)
                 if playing == 1:
@@ -389,8 +415,8 @@ class AudioCommands(commands.Cog):
                                 print(channel, type(channel))
                                 musics[ctx.guild] = []
                                 client = await channel.connect()
-                                current_music = title
-                                msg = await ctx.send(f"Je lance **{title}** : {video.url} demandé par **{nickname}**")
+                                current_music = url
+                                msg = await ctx.send(f"Je lance **{title}** : {current_music} demandé par **{nickname}**")
                                 play_song(ctx, self.bot, client, musics[ctx.guild], video)
                                 ctx.voice_client.source.volume = 50 / 100
                                 print(50/100)
@@ -398,13 +424,26 @@ class AudioCommands(commands.Cog):
         else:
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
+    @commands.command()
+    async def music_playing(self, ctx):
+        global current_music
+        current_channel = ctx.message.channel.id
+        channels = ctx.guild.channels
+        if checks_in_bot_channel(channels, current_channel):
+            if current_music == "":
+                await ctx.send("Il n'y a aucune musiques en train d'être joué")
+            else:
+                await ctx.send(f"La musique en train d'être joué est {current_music}")
+        else:
+            await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
     @commands.command(pass_context=True, aliases=['s'])
     async def skip(self, ctx):
-        global url_queue
+        global current_music
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
-        if checks_in_bot_channel(channels, current_channel) == True:
+        if checks_in_bot_channel(channels, current_channel):
+            current_music = ""
             client = ctx.guild.voice_client
             client.stop()
         else:
