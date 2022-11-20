@@ -9,7 +9,19 @@ import urllib.parse, urllib.request, re
 from time import sleep
 from gtts import gTTS
 from time import sleep
+<<<<<<< HEAD
 import top, musicCommands, ban, unban, kick, punch, hug, kiss, coucou, clear, togglebotchannel, edt
+=======
+from datetime import datetime
+import pytz
+from mutagen.mp3 import MP3
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from datetime import date
+
+import time
+import jokes, blague, top, musicCommands, ban, unban, kick, punch, say, hug, kiss, coucou, clear, togglebotchannel, edt
+>>>>>>> 981d4393020c77b60133816a3e45489e89782a79
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
 slash = SlashCommand(bot, sync_commands = True)
@@ -143,6 +155,7 @@ async def current_time(ctx, contitry):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
+<<<<<<< HEAD
 
 
 
@@ -169,6 +182,8 @@ async def est_ce_que_tu_dis_faux(ctx):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
+=======
+>>>>>>> 981d4393020c77b60133816a3e45489e89782a79
 player1 = ""
 player2 = ""
 turn = ""

@@ -1,5 +1,6 @@
 .cache
 __pycache__/
+edt_token.txt
 link_edt.txt
 token_blague.txt
 email.txt
