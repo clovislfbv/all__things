@@ -17,11 +17,6 @@ def checks_in_bot_channel(channels, channel):
             return True
     return False
 
-path = "/home/pi/Téléchargements/GroupCalendar.ics"
-
-if not(os.path.exists(path)):
-    os.remove(path)
-
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
 def checks_in_bot_channel(channels, channel):

@@ -1,10 +1,6 @@
 .cache
 __pycache__/
 edt_token.txt
-link_edt.txt
 token_blague.txt
-email.txt
-mdp epi.txt
 token_bot.txt
 token_spo.txt
-mdp_epi.txt
