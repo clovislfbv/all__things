@@ -1,21 +1,10 @@
 import discord
 from discord.ext import commands
 import requests as r
-from requests.auth import HTTPBasicAuth
 from datetime import datetime
 import vobject
 import pytz
-
-allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
-
-def checks_in_bot_channel(channels, channel):
-    global allowed_channels
-    for i in range(len(allowed_channels)):
-        channel_id = allowed_channels[i]
-        print(channel_id, channel)
-        if channel_id == channel:
-            return True
-    return False
+import time as t
 
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
@@ -39,7 +28,7 @@ class ClassCommands(commands.Cog):
     async def edt(self, ctx, day=None):
         ''' donne notre emploi du temps (format argument : dd/mm/yyyy), l'argument par défaut est à la date d'aujourd'hui '''
         global lastdlday, lastedt
-
+        d = t.perf_counter()
         if day is not None:
             number_slash = 0
             for char in day:
@@ -69,19 +58,14 @@ class ClassCommands(commands.Cog):
                 cal = lastedt
                 print("ics already installed")
             else:
-                url = open('edt_token.txt').read() 
+                headers = {'User-Agent': 'Raspbian Chromium/74.0.3729.157', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive'}
+                with open('edt_token.txt', 'r') as token_edt:
+                    url = token_edt.readline().rstrip('\n')
+                print(url)
                 response = r.get(url)
-                print(response.status_code)
-                print(response.text)
                 response.encoding = "utf-8"
-                print(response)
-                print("test1")
                 data = response.text
-                print("test2")
-                print(data)
                 cal = vobject.readOne(data)
-                print("test3")
-
                 lastdlday = datetime.now()
                 lastedt = cal
 
@@ -89,7 +73,6 @@ class ClassCommands(commands.Cog):
 
             emb = discord.Embed(title=today.strftime("%d/%m/%Y"), color=0x3498db)
             dates = []
-            print("test4")
             for ev in cal.vevent_list:
                 start_time = ev.dtstart.valueRepr().isoformat().split("-")
                 variable = start_time[0]
@@ -108,6 +91,7 @@ class ClassCommands(commands.Cog):
 
             if len(dates) == 0:
                 emb.add_field(name = "PAS COURS !!", value = "Aujourd'hui, il n'y a pas cours")
+            print(t.perf_counter() - d)
             msg = await ctx.send(embed = emb)
         else:
             print("bad argument")

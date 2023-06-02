@@ -1,18 +1,19 @@
 import discord
 from discord.ext import commands, tasks
-from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_commands import create_choice, create_option
+from discord import ApplicationCommandInteraction as APPCI, SlashCommandOptionChoice as Choice, SlashCommandOption as Option, Button, ButtonStyle
 from youtube_dl import *
 import asyncio
 from random import randint, choice, shuffle
 import urllib.parse, urllib.request, re
+import asyncio
 from time import sleep
 from gtts import gTTS
 from time import sleep
-import top, musicCommands, ban, unban, kick, punch, hug, kiss, coucou, clear, togglebotchannel, edt
+import schedule
+import time
+import top, musicCommands, ban, unban, kick, punch, hug, kiss, coucou, clear, togglebotchannel, edt, say
 
 bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
-slash = SlashCommand(bot, sync_commands = True)
 ytdl = YoutubeDL()
 client = discord.Client()
 agenda = []
@@ -89,59 +90,22 @@ async def broadcast(ctx):
             index += 1
         await guild.channels[index].send("Au le con j'avais oublié le lien : https://www.instagram.com/p/CjIyZMxsdpN/")
 '''
-@bot.command()
-async def current_time(ctx, contitry):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
-    if checks_in_bot_channel(channels, current_channel):
-        hours = ""
-        minutes = ""
-        secondes = ""
-        times = [hours, minutes, secondes]
-        tz = pytz.timezone(contitry)
-        current_time = datetime.now(tz)
-        current_time = current_time.strftime("%H:%M:%S")
-        contitry = list(contitry)
-        print(contitry)
-        while contitry[0] != "/":
-            del contitry[0]
-        del contitry[0]
-        contitry = "".join(contitry)
-        print("Current Time =", current_time)
-        temps = await ctx.send(f"Il est actuellement {current_time} à {contitry}")
-        current_time = list(current_time)
-        while current_time[0] != ":":
-            hours += current_time[0]
-            del current_time[0]
-        del current_time[0]
-        while current_time[0] != ":":
-            minutes += current_time[0]
-            del current_time[0]
-        del current_time[0]
-        for i in range(2):
-            print(current_time)
-            secondes += current_time[0]
-            del current_time[0]
-        hours = int(hours)
-        minutes = int(minutes)
-        secondes = int(secondes)
 
-        tts = gTTS(f"Il est actuellement {hours} heures, {minutes} minutes et {secondes} secondes à {contitry}", lang="fr")
-        tts.save('/home/pi/Documents/bot_discord_benjamin/all_things-my-Discord-bot/audio/heure.mp3')
-        user = ctx.message.author
-        if user.voice is not None:
-            channel = ctx.author.voice.channel
-            client = await channel.connect()
-            client.play(discord.FFmpegPCMAudio('/home/pi/Documents/bot_discord_benjamin/all_things-my-Discord-bot/audio/heure.mp3'))
-            ctx.voice_client.source.volume = 1000 / 100
-            length = mutagen_length("/home/pi/Documents/bot_discord_benjamin/all_things-my-Discord-bot/audio/heure.mp3")
-            sleep(length)
-            client = ctx.guild.voice_client
-            await client.disconnect()
-        else:
-            await ctx.send("Stv y a une petite surprise lorsque tu te mets dans un chat vocal et que tu réexécutes cette commande.")
-    else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+'''
+def hello():
+    guild = bot.guilds[0]
+    test = guild.channels[0]
+    print(test)
+    channel = bot.get_channel(631935311592554636)
+    print(channel)
+    asyncio.gather(channel.send('hello'))
+
+schedule.every(10).seconds.do(hello)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
+'''
         
 player1 = ""
 player2 = ""
@@ -288,11 +252,11 @@ async def place_error(ctx, error):
     elif isinstance(error, commands.BadArgument):
         await ctx.send("Please make sure to enter an integer.")
 
-@slash.slash(name="slap", description="donne une claque à un membre du serveur", guild_ids=[631935311592554601], options=[
+'''@slash.slash(name="slap", description="donne une claque à un membre du serveur", guild_ids=[631935311592554601], options=[
     create_option(name="member", description="le membre du serveur à qui tu veux donner une claque", option_type=3, required=True)    
-])
+])'''
 @bot.command()
-async def slap(ctx:SlashContext, member):
+async def slap(ctx, member):
     if {ctx.author.mention} == member:
         ctx.send("T'es teubé ou quoi ? Tu peux pas te donner de claques à toi-même ?! Y a que toi pour être si teubé que ça !!")
     else:
@@ -424,10 +388,9 @@ async def getInfo(ctx, text):
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
-
+'''
 @bot.command()
 async def aide(ctx):
-    '''get more informations about commands'''
     current_channel = ctx.message.channel.id
     channels = ctx.guild.channels
     if checks_in_bot_channel(channels, current_channel):
@@ -645,7 +608,7 @@ async def end_hangman(ctx):
     global fin
     fin = 1
     await ctx.send("La partie de pendu a été terminé manuellement. Tu peux en redémarrer une nouvelle avec la commande $start_hangman.")
-
+'''
 bot.add_cog(top.AudioCommands(bot))
 bot.add_cog(musicCommands.AudioCommands(bot))
 bot.add_cog(ban.AdminCommands(bot))
@@ -658,6 +621,7 @@ bot.add_cog(coucou.GifCommands(bot))
 bot.add_cog(togglebotchannel.AdminCommands(bot))
 bot.add_cog(clear.AdminCommands(bot))
 bot.add_cog(edt.ClassCommands(bot))
+bot.add_cog(say.OtherCommands(bot))
 
 with open('token_bot.txt', 'r') as token:
     bot.run(token.read())
