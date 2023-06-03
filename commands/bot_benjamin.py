@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands, Game, Activity, ActivityType
 from discord.ext import commands, tasks
 from discord import ApplicationCommandInteraction as APPCI, SlashCommandOptionChoice as Choice, SlashCommandOption as Option, Button, ButtonStyle
 from youtube_dl import *
@@ -13,9 +14,10 @@ import schedule
 import time
 import top, musicCommands, ban, unban, kick, punch, hug, kiss, coucou, clear, togglebotchannel, edt, say
 
-bot = commands.Bot(command_prefix="$", description = "Bot créé par Clovis!")
+intents = discord.Intents.default()
+client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
 ytdl = YoutubeDL()
-client = discord.Client()
 agenda = []
 message_skip = 0
 message_channel = 0
@@ -37,16 +39,26 @@ ydl_opts = {
     'progress_hooks': [my_hook]
 }
 
+'''
 @bot.event
 async def on_connect():
     bot.load_extension("OtherCommands")
+'''
 
 @bot.event
 async def on_ready():
     print("Ready")
-    changeStatus.start()
+    status = ["$help", "surpasser Bomboclaat Bot", "$aide"]
+    await tree.sync()
+    change_activity.start(activity_list)
 
-status = ["$help", "surpasser Bomboclaat Bot", "$aide"]
+@tasks.loop(seconds=10)
+async def change_activity(activity_list):
+    activity = discord.Activity(type=discord.ActivityType.playing, name=activity_list[0])
+    await client.change_presence(activity=activity)
+
+    activity_list.append(activity_list.pop(0))
+
 
 allowed_channels = [796137851972485151, 697492398070300763, 796731890630787126, 631935311592554636] #["🤖・cow-bip-bop-bots", "bruh-botsandmusic", "test-bot", "général de mon propre serveur"]
 
@@ -72,14 +84,6 @@ async def on_command_error(ctx, error):
     elif isinstance(error.original, discord.Forbidden):
         await ctx.send("Dsl mec je peux pas exécuter ta commande pcq les admins ne m'ont pas donner les permissions pour faire cela.")'''
 
-@bot.command()
-async def start(ctx, secondes = 5):
-	changeStatus.change_interval(seconds = secondes)
-
-@tasks.loop(seconds = 5)
-async def changeStatus():
-	game = discord.Game(choice(status))
-	await bot.change_presence(activity = game)
 '''
 @bot.command()
 @commands.has_permissions(administrator=True)
@@ -125,11 +129,12 @@ winningConditions = [
     [2, 4, 6]
 ]
 
-@bot.command()
-async def morpion(ctx, p1: discord.Member, p2: discord.Member):
-    """ input : @player1 @player2"""
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
+@tree.command(name="morpion", description="pour jouer au morpion avec un membre du serveur")
+@app_commands.describe(p1 = "le premier joueur")
+@app_commands.describe(p2 = "le deuxième joueur")
+async def morpion(interaction:discord.Interaction, p1: discord.Member, p2: discord.Member):
+    current_channel = interaction.message.channel.id
+    channels = interaction.guild.channels
     if checks_in_bot_channel(channels, current_channel):
         print("morpion began")
         global count
@@ -155,7 +160,7 @@ async def morpion(ctx, p1: discord.Member, p2: discord.Member):
             for x in range(len(board)):
                 if x == 2 or x == 5 or x == 8:
                     line += " " + board[x]
-                    await ctx.send(line)
+                    await interaction.send(line)
                     line = ""
                 else:
                     line += " " + board[x]
@@ -164,18 +169,19 @@ async def morpion(ctx, p1: discord.Member, p2: discord.Member):
             num = random.randint(1, 2)
             if num == 1:
                 turn = player1
-                await ctx.send("It is <@" + str(player1.id) + ">'s turn.")
+                await interaction.send("It is <@" + str(player1.id) + ">'s turn.")
             elif num == 2:
                 turn = player2
-                await ctx.send("It is <@" + str(player2.id) + ">'s turn.")
-            await ctx.send("To play you have to write the command $place and then the rank where you want to put your thing from your team")
+                await interaction.send("It is <@" + str(player2.id) + ">'s turn.")
+            await interaction.send("To play you have to write the command $place and then the rank where you want to put your thing from your team")
         else:
-            await ctx.send("A game is already in progress! Finish it before starting a new one.")
+            await interaction.response.send_message("A game is already in progress! Finish it before starting a new one.")
     else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+        await interaction.response.send_message("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
-@bot.command()
-async def place(ctx, pos: int):
+@tree.command(name="place", description="pour placer un pion lors d'une partie de morpion")
+@app_commands(pos="la case où tu veux poser ton pion")
+async def place(interaction:discord.Interaction, pos: int):
     global turn
     global player1
     global player2
@@ -183,8 +189,8 @@ async def place(ctx, pos: int):
     global count
     global gameOver
 
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
+    current_channel = interaction.message.channel.id
+    channels = interaction.guild.channels
     if checks_in_bot_channel(channels, current_channel):
 
         if not gameOver:
@@ -203,7 +209,7 @@ async def place(ctx, pos: int):
                     for x in range(len(board)):
                         if x == 2 or x == 5 or x == 8:
                             line += " " + board[x]
-                            await ctx.send(line)
+                            await interaction.send(line)
                             line = ""
                         else:
                             line += " " + board[x]
@@ -211,10 +217,10 @@ async def place(ctx, pos: int):
                     checkWinner(winningConditions, mark)
                     print(count)
                     if gameOver:
-                        await ctx.send(mark + " wins!")
+                        await interaction.send(mark + " wins!")
                     elif count >= 9:
                         gameOver = True
-                        await ctx.send("It's a tie!")
+                        await interaction.send("It's a tie!")
 
                     # switch turns
                     if turn == player1:
@@ -222,13 +228,13 @@ async def place(ctx, pos: int):
                     elif turn == player2:
                         turn = player1
                 else:
-                    await ctx.send("Be sure to choose an integer between 1 and 9 (inclusive) and an unmarked tile.")
+                    await interaction.response.send_message("Be sure to choose an integer between 1 and 9 (inclusive) and an unmarked tile.")
             else:
-                await ctx.send("It is not your turn.")
+                await interaction.response.send_message("It is not your turn.")
         else:
-            await ctx.send("Please start a new game using the !tictactoe command.")
+            await interaction.response.send_message("Please start a new game using the !tictactoe command.")
     else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+        await interaction.response.send_message("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
 
 def checkWinner(winningConditions, mark):
@@ -238,39 +244,41 @@ def checkWinner(winningConditions, mark):
             gameOver = True
 
 @morpion.error
-async def tictactoe_error(ctx, error):
+async def tictactoe_error(interaction:discord.Interaction, error):
     print(error)
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Please mention 2 players for this command.")
+        await interaction.response.send_message("Please mention 2 players for this command.")
     elif isinstance(error, commands.BadArgument):
-        await ctx.send("Please make sure to mention/ping players (ie. <@688534433879556134>).")
+        await interaction.response.send_message("Please make sure to mention/ping players (ie. <@688534433879556134>).")
 
 @place.error
-async def place_error(ctx, error):
+async def place_error(interaction:discord.Interaction, error):
     if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send("Please enter a position you would like to mark.")
+        await interaction.response.send_message("Please enter a position you would like to mark.")
     elif isinstance(error, commands.BadArgument):
-        await ctx.send("Please make sure to enter an integer.")
+        await interaction.response.send_message("Please make sure to enter an integer.")
 
 '''@slash.slash(name="slap", description="donne une claque à un membre du serveur", guild_ids=[631935311592554601], options=[
     create_option(name="member", description="le membre du serveur à qui tu veux donner une claque", option_type=3, required=True)    
 ])'''
-@bot.command()
-async def slap(ctx, member):
-    if {ctx.author.mention} == member:
-        ctx.send("T'es teubé ou quoi ? Tu peux pas te donner de claques à toi-même ?! Y a que toi pour être si teubé que ça !!")
+@tree.command(name = "slap", description = "pour donner une claque à un membre du serveur")
+@app_commands(member = "la mention du membre dont tu veux donner une claque")
+async def slap(interaction:discord.Interaction, member:discord.member.mention):
+    if interaction.author.mention == member:
+        interaction.response.send_message("T'es teubé ou quoi ? Tu peux pas te donner de claques à toi-même ?! Y a que toi pour être si teubé que ça !!")
     else:
         slaps = ["https://i.gifer.com/XaaW.gif", "https://i.gifer.com/2eNz.gif", "https://i.gifer.com/2Dji.gif", "https://i.gifer.com/1Vbb.gif", "https://i.gifer.com/K03.gif", "https://i.gifer.com/DjuN.gif", "https://i.gifer.com/Djw.gif", "https://i.gifer.com/4kpG.gif", "https://i.gifer.com/K02.gif"]
         slappy = slaps[randint(0, len(slaps)-1)]
         emb = discord.Embed(title=None, description = f"{ctx.author.mention} met une claque à {member}", color=0x3498db)
         emb.set_image(url=f"{slappy}")
-        await ctx.send( embed = emb)
+        await interaction.response.send_message( embed = emb)
 
-@bot.command()
+'''
 @commands.has_permissions(manage_messages=True)
-async def nombre_serveurs(ctx):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
+@tree.command(name="nombre_serveurs", description = "pour connaître le nombre de serveurs dans lequel le bot est et leur noms"
+async def nombre_serveurs(interaction:discord.Interaction):
+    current_channel = interaction.message.channel.id
+    channels = interaction.guild.channels
     if checks_in_bot_channel(channels, current_channel):
         counter = 0
         names = ""
@@ -281,6 +289,7 @@ async def nombre_serveurs(ctx):
         await ctx.send(f"Je suis membre dans un total de {counter} serveurs qui se nomment : {names}")
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+
 
 @bot.command()
 async def lettre_random(ctx):
@@ -303,6 +312,7 @@ async def lettre_random(ctx):
                 await ctx.send(f"Ta lettre : {lettre_joueur.content} \n Ma lettre : {lettre_bot} \n Dommage ! Tu as perdu !")
     else:
         await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+'''
 
 def mutagen_length(path):
     try:
@@ -312,32 +322,34 @@ def mutagen_length(path):
     except:
         return None
 
-@bot.command()
-async def accent(ctx, langue, *, message):
-    current_channel = ctx.message.channel.id
-    channels = ctx.guild.channels
+@tree.command(name="accent", description="pour faire parler le bot avec n'importe quel accent")
+@app_commands.describe(langue="la langue de l'accent souhaité")
+@app_commands.describe(message="le message que tu veux faire dire au bot")
+async def accent(interaction:discord.Interaction, langue:str, *, message:str):
+    current_channel = interaction.message.channel.id
+    channels = interaction.guild.channels
     if checks_in_bot_channel(channels, current_channel):
         if langue == "qu":
             tts = gTTS(message, lang="fr", tld="ca")
         else:
             tts = gTTS(message, lang=langue)
         tts.save('Desktop/bot_discord/traduction.mp3')
-        user = ctx.message.author
+        user = interaction.message.author
         if user.voice is None:
             return await ctx.send("Not connected to voice channel")
 
-        channel = ctx.author.voice.channel
-        client = await channel.connect()
-        client.play(discord.FFmpegPCMAudio('Desktop/bot_discord/traduction.mp3'))
-        ctx.voice_client.source.volume = 1000 / 100
+        channel = interaction.author.voice.channel
+        audio_channel = await channel.connect()
+        audio_channel.play(discord.FFmpegPCMAudio('Desktop/bot_discord/traduction.mp3'))
+        audio_channel.voice_client.source.volume = 1000 / 100
         length = mutagen_length("C:/Users/gamin/Desktop/bot_discord/traduction.mp3")
         print("duration sec: " + str(length))
         print("duration min: " + str(int(length/60)) + ':' + str(int(length%60)))
         sleep(length)
-        client = ctx.guild.voice_client
-        await client.disconnect()
+        audio_channel = interaction.guild.voice_client
+        await audio_channel.disconnect()
     else:
-        await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
+        await audio_channel.response.send_message("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
 @bot.command()
 async def serverInfo(ctx):
