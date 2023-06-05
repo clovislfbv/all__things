@@ -49,7 +49,7 @@ class OtherCommands(commands.Cog):
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
 
     @commands.command()
-    async def dit(self, ctx, chiffre, *texte):
+    async def say(self, ctx, chiffre, *texte):
         current_channel = ctx.message.channel.id
         channels = ctx.guild.channels
         if checks_in_bot_channel(channels, current_channel) == True:
@@ -58,5 +58,6 @@ class OtherCommands(commands.Cog):
             else:
                 for i in range(int(chiffre)):
                     await ctx.send(" ".join(texte))
+                await ctx.send("Si tu en as besoin tu peux écrire $aide pour avoir des explication sur toutes les commandes disponible avec ce bot.")
         else:
             await ctx.send("Désolé ! Mais vous n'êtes autorisé qu'à utiliser les bots channels qui ont été whitelisté par mon créateur.")
