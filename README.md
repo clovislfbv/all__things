@@ -29,3 +29,19 @@ Little tutorial:
 - add, commit, and so on
 - push
 - Create a Pull Request: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request
+
+### Add commands
+If you want to contribute to the bot by adding new commands, you need to follow this model:
+
+```py
+@bot.command()
+async def yourfunction(ctx): #ctx needs to be in the arguments for the command to work on Discord
+    '''your code'''
+```
+
+Careful! If you add a command to the bot. It must be before the lines:
+```py
+with open('token_bot.txt', 'r') as token:
+    bot.run(token.read())
+```
+Otherwise, the bot will not take into account your new command in its list of commands
